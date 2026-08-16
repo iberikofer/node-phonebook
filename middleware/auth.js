@@ -13,7 +13,7 @@ async function auth(req, res, next) {
 	}
 
 	try {
-		const decode = jwt.verify(token, process.env.JWT_SECREET);
+		const decode = jwt.verify(token, process.env.JWT_SECRET);
 		const user = await userModel.findById(decode.id);
 
 		if (!user || user.token !== token) {

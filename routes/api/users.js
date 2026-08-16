@@ -10,14 +10,18 @@ import {
 } from "../../controllers/usersController.js";
 import auth from "../../middleware/auth.js";
 import avatar from "../../middleware/avatar.js";
+import validateBody from "../../middleware/validateBody.js";
+import userRegistrationSchema from "../../validation/userRegistrationSchema.js";
+import userLoginSchema from "../../validation/userLoginSchema.js";
+import emailVerificationSchema from "../../validation/emailVerificationSchema.js";
 
 const router = express.Router();
 
 router.get("/current", auth, getCurrentUser);
-router.post("/register", registerUser);
+router.post("/register", validateBody(userRegistrationSchema), registerUser);
 router.get("/verify/:verifyToken", verifyNewUser);
-router.post("/verify", resendVerificationToken);
-router.post("/login", logInUser);
+router.post("/verify", validateBody(emailVerificationSchema), resendVerificationToken);
+router.post("/login", validateBody(userLoginSchema), logInUser);
 router.post("/logout", auth, logOutUser);
 router.patch("/avatar", auth, avatar.single("avatar"), changeAvatar);
 router.patch("/:id/avatar", auth, avatar.single("avatar"), changeAvatar);

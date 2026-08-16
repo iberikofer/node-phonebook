@@ -7,8 +7,6 @@ import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
 import Jimp from "jimp";
 import userModel from "../models/usersModel.js";
-import userRegistrationSchema from "../validation/userRegistrationSchema.js";
-import userLoginSchema from "../validation/userLoginSchema.js";
 import sendVerificationEmail from "../mail/transport.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -16,12 +14,6 @@ const __dirname = path.dirname(__filename);
 
 export async function registerUser(req, res, next) {
 	const { name, email, password, subscription } = req.body;
-
-	const { error } = userRegistrationSchema.validate(req.body);
-	if (error) {
-		console.error(error);
-		return res.status(400).send({ message: "Validation error, check the required fields or body you sent!" });
-	}
 
 	const user = await userModel.findOne({ email }).exec();
 	if (user !== null) {
@@ -74,9 +66,6 @@ export async function verifyNewUser(req, res, next) {
 
 export async function resendVerificationToken(req, res, next) {
 	const { email } = req.body;
-	if (!email) {
-		return res.status(400).send({ message: "Missing required field - email" });
-	}
 
 	const user = await userModel.findOne({ email }).exec();
 	if (!user) {
@@ -108,12 +97,6 @@ export async function resendVerificationToken(req, res, next) {
 export async function logInUser(req, res, next) {
 	const { email, password } = req.body;
 
-	const { error } = userLoginSchema.validate(req.body);
-	if (error) {
-		console.error(error);
-		return res.status(400).send({ message: "Validation error, check the required fields or body you sent!" });
-	}
-
 	const user = await userModel.findOne({ email }).exec();
 	if (user === null) {
 		return res.status(400).send({ message: "Email or password is incorrect!" });
@@ -125,7 +108,7 @@ export async function logInUser(req, res, next) {
 	}
 
 	try {
-		const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECREET, { expiresIn: "1d" });
+		const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
 		await userModel.findByIdAndUpdate(user._id, { token });
 

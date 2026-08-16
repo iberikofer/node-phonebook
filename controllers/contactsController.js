@@ -1,5 +1,4 @@
 import contactModel from "../models/contactsModel.js";
-import contactSchema from "../validation/contactValidationSchema.js";
 
 export async function getContacts(req, res, next) {
 	try {
@@ -28,12 +27,6 @@ export async function addContact(req, res, next) {
 	const ownerId = req.user.id;
 	const { name, email, phone, favorite } = req.body;
 
-	const { error } = contactSchema.validate(req.body);
-	if (error) {
-		console.error(error);
-		return res.status(400).send({ message: "Missing required field(s)!" });
-	}
-
 	try {
 		const existingPhoneContact = await contactModel.findOne({ phone, ownerId }).exec();
 		if (existingPhoneContact) {
@@ -51,11 +44,6 @@ export async function addContact(req, res, next) {
 
 export async function updateContact(req, res, next) {
 	const { name, email, phone } = req.body;
-	const { error } = contactSchema.validate(req.body);
-	if (error) {
-		console.error(error);
-		return res.status(400).send({ message: "Missing required field(s)!" });
-	}
 
 	try {
 		const result = await contactModel
@@ -73,10 +61,6 @@ export async function updateContact(req, res, next) {
 }
 
 export async function updateFavoriteField(req, res, next) {
-	if (req.body.favorite === undefined) {
-		return res.status(400).send({ message: "Missing field - favorite!" });
-	}
-
 	try {
 		const result = await contactModel
 			.findOneAndUpdate({ _id: req.params.id, ownerId: req.user.id }, { favorite: req.body.favorite }, { new: true })
