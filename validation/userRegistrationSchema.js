@@ -1,4 +1,4 @@
-const Joi = require("joi");
+import Joi from "joi";
 
 const userRegistrationSchema = Joi.object({
 	name: Joi.string().min(2).max(25).required(),
@@ -7,4 +7,4 @@ const userRegistrationSchema = Joi.object({
 	subscription: Joi.string().valid("starter", "premium", "vip"),
 });
 
-module.exports = userRegistrationSchema;
+export default userRegistrationSchema;
