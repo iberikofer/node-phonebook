@@ -5,7 +5,7 @@ import crypto from "node:crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
-import Jimp from "jimp";
+import sharp from "sharp";
 import userModel from "../models/usersModel.js";
 import sendVerificationEmail from "../mail/transport.js";
 
@@ -146,14 +146,15 @@ export async function changeAvatar(req, res, next) {
 		return res.status(400).send({ message: "Avatar file is required!" });
 	}
 
+	const oldFilePath = req.file.path;
+	const newFilePath = path.join(__dirname, "..", "public", "avatars", req.file.filename);
+
 	try {
-		const oldFilePath = req.file.path;
-		const newFilePath = path.join(__dirname, "..", "public", "avatars", req.file.filename);
+		await sharp(oldFilePath)
+			.resize(250, 250)
+			.toFile(newFilePath);
 
-		await fs.rename(oldFilePath, newFilePath);
-
-		const image = await Jimp.read(newFilePath);
-		await image.resize(250, 250).writeAsync(newFilePath);
+		await fs.unlink(oldFilePath);
 
 		const avatarURL = `/avatars/${req.file.filename}`;
 		await userModel.findByIdAndUpdate(req.user.id, { avatar: avatarURL }, { new: true }).exec();
@@ -163,6 +164,7 @@ export async function changeAvatar(req, res, next) {
 			avatarURL,
 		});
 	} catch (error) {
+		await fs.unlink(oldFilePath).catch(() => {});
 		next(error);
 	}
 }

@@ -11,6 +11,7 @@ import {
 import auth from "../../middleware/auth.js";
 import avatar from "../../middleware/avatar.js";
 import validateBody from "../../middleware/validateBody.js";
+import { authLimiter } from "../../middleware/rateLimiter.js";
 import userRegistrationSchema from "../../validation/userRegistrationSchema.js";
 import userLoginSchema from "../../validation/userLoginSchema.js";
 import emailVerificationSchema from "../../validation/emailVerificationSchema.js";
@@ -18,10 +19,10 @@ import emailVerificationSchema from "../../validation/emailVerificationSchema.js
 const router = express.Router();
 
 router.get("/current", auth, getCurrentUser);
-router.post("/register", validateBody(userRegistrationSchema), registerUser);
+router.post("/register", authLimiter, validateBody(userRegistrationSchema), registerUser);
 router.get("/verify/:verifyToken", verifyNewUser);
-router.post("/verify", validateBody(emailVerificationSchema), resendVerificationToken);
-router.post("/login", validateBody(userLoginSchema), logInUser);
+router.post("/verify", authLimiter, validateBody(emailVerificationSchema), resendVerificationToken);
+router.post("/login", authLimiter, validateBody(userLoginSchema), logInUser);
 router.post("/logout", auth, logOutUser);
 router.patch("/avatar", auth, avatar.single("avatar"), changeAvatar);
 router.patch("/:id/avatar", auth, avatar.single("avatar"), changeAvatar);
