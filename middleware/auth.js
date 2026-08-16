@@ -1,39 +1,33 @@
-const jwt = require("jsonwebtoken")
-const userModel = require("../models/usersModel")
+import jwt from "jsonwebtoken";
+import userModel from "../models/usersModel.js";
 
-function auth(req, res, next) {
-	const authHeader = req.headers.authorization
+async function auth(req, res, next) {
+	const authHeader = req.headers.authorization;
 	if (typeof authHeader !== "string") {
-		return res.status(401).send({ message: "No token provided!" })
+		return res.status(401).send({ message: "No token provided!" });
 	}
 
-	const [bearer, token] = authHeader.split(" ", 2)
-	if (bearer !== "Bearer") {
-		return res.status(401).send({ message: "No token provided!" })
+	const [bearer, token] = authHeader.split(" ", 2);
+	if (bearer !== "Bearer" || !token) {
+		return res.status(401).send({ message: "No token provided!" });
 	}
 
-	jwt.verify(token, process.env.JWT_SECREET, async (error, decode) => {
-		if (error) {
-			if (error.name === "TokenExpiredError" || error.name === "JsonWebTokenError") {
-				return res.status(401).send({ message: "Token Error! (Check if it's not expired)" })
-			}
-			return next(error)
+	try {
+		const decode = jwt.verify(token, process.env.JWT_SECREET);
+		const user = await userModel.findById(decode.id);
+
+		if (!user || user.token !== token) {
+			return res.status(401).send({ message: "You are not authorized!" });
 		}
 
-		try {
-			const user = await userModel.findById(decode.id)
-
-			if (user.token !== token) {
-				return res.status(401).send({ message: "You are not authorized!" })
-			}
-
-			req.user = { id: user.id, email: user.email }
-
-			next()
-		} catch (error) {
-			next(error)
+		req.user = user;
+		next();
+	} catch (error) {
+		if (error.name === "TokenExpiredError" || error.name === "JsonWebTokenError") {
+			return res.status(401).send({ message: "Token Error! (Check if it's not expired)" });
 		}
-	})
+		next(error);
+	}
 }
 
-module.exports = auth
+export default auth;

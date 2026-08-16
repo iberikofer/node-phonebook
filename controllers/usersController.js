@@ -145,17 +145,9 @@ export async function logOutUser(req, res, next) {
 }
 
 export async function getCurrentUser(req, res, next) {
-	const authHeader = req.headers.authorization;
-
-	const [bearer, token] = authHeader.split(" ", 2);
-	if (bearer !== "Bearer") {
-		return res.status(401).send({ message: "No token provided!" });
-	}
-
 	try {
-		const { name, email, subscription } = await userModel.findOne({ token }).exec();
-
-		res.status(200).send({ user: { name, email, subscription } });
+		const { name, email, subscription, avatar } = req.user;
+		res.status(200).send({ user: { name, email, subscription, avatar } });
 	} catch (error) {
 		next(error);
 	}
@@ -167,6 +159,10 @@ export async function changeAvatar(req, res, next) {
 		return res.status(404).send({ message: "User is not found!" });
 	}
 
+	if (!req.file) {
+		return res.status(400).send({ message: "Avatar file is required!" });
+	}
+
 	try {
 		const oldFilePath = req.file.path;
 		const newFilePath = path.join(__dirname, "..", "public", "avatars", req.file.filename);
@@ -176,9 +172,13 @@ export async function changeAvatar(req, res, next) {
 		const image = await Jimp.read(newFilePath);
 		await image.resize(250, 250).writeAsync(newFilePath);
 
-		await userModel.findByIdAndUpdate(req.user.id, { avatar: req.file.filename }, { new: true }).exec();
+		const avatarURL = `/avatars/${req.file.filename}`;
+		await userModel.findByIdAndUpdate(req.user.id, { avatar: avatarURL }, { new: true }).exec();
 
-		res.status(200).send({ message: "Your avatar has been updated successfully. Keep in mind that it has been resized to 250x250 px.", avatarURL: path.join(__dirname, "..", "public", "avatars", req.file.filename) });
+		res.status(200).send({
+			message: "Your avatar has been updated successfully. Keep in mind that it has been resized to 250x250 px.",
+			avatarURL,
+		});
 	} catch (error) {
 		next(error);
 	}
