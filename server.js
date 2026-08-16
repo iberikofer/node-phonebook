@@ -1,5 +1,13 @@
-const app = require("./app")
+import app from "./app.js";
+import connectDB from "./db.js";
 
-app.listen(3000, () => {
-	console.log("Server is running. Use my API on port: 3000")
-})
+const PORT = process.env.PORT || 3000;
+
+async function startServer() {
+	await connectDB();
+	app.listen(PORT, () => {
+		console.log(`Server is running. Use my API on port: ${PORT}`);
+	});
+}
+
+startServer();

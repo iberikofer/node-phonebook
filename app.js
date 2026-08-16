@@ -1,20 +1,22 @@
-const path = require("node:path")
-const express = require("express")
-const logger = require("morgan")
-const cors = require("cors")
-require("dotenv").config();
-const appRouter = require("./routes/api/index")
-require("./db")
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import express from "express";
+import logger from "morgan";
+import cors from "cors";
+import "dotenv/config";
+import appRouter from "./routes/api/index.js";
 
-const app = express()
-const formatsLogger = app.get("env") === "development" ? "dev" : "short"
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-app.use(logger(formatsLogger))
-app.use(cors())
-app.use(express.json())
-app.use("/avatars", express.static(path.join(__dirname, "public", "avatars")))
-app.use("/api", appRouter)
+const app = express();
+const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 
+app.use(logger(formatsLogger));
+app.use(cors());
+app.use(express.json());
+app.use("/avatars", express.static(path.join(__dirname, "public", "avatars")));
+app.use("/api", appRouter);
 
 app.use((_, res, __) => {
 	res.status(404).json({
@@ -35,5 +37,4 @@ app.use((err, _, res, __) => {
 	});
 });
 
-
-module.exports = app
+export default app;
