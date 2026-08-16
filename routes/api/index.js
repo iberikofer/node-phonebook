@@ -1,10 +1,11 @@
-const express = require("express")
-const router = express.Router()
-const usersRoutes = require("./users")
-const contactsRoutes = require("./contacts")
-const auth = require("../../middleware/auth.js")
+import express from "express";
+import usersRoutes from "./users.js";
+import contactsRoutes from "./contacts.js";
+import auth from "../../middleware/auth.js";
 
-router.use("/users", usersRoutes)
-router.use("/contacts", auth, contactsRoutes)
+const router = express.Router();
 
-module.exports = router
+router.use("/users", usersRoutes);
+router.use("/contacts", auth, contactsRoutes);
+
+export default router;

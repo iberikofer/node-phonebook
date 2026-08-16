@@ -1,31 +1,25 @@
-const express = require("express")
-const router = express.Router()
-const jsonParcer = express.json();
-const {
+import express from "express";
+import {
 	registerUser,
 	logInUser,
 	logOutUser,
 	getCurrentUser,
 	changeAvatar,
 	verifyNewUser,
-	resendVerificationToken
-} = require("../../controllers/usersController.js")
-const auth = require("../../middleware/auth.js")
-const avatar = require("../../middleware/avatar.js")
+	resendVerificationToken,
+} from "../../controllers/usersController.js";
+import auth from "../../middleware/auth.js";
+import avatar from "../../middleware/avatar.js";
 
-router.get("/current", auth, jsonParcer, getCurrentUser)
+const router = express.Router();
 
-router.post("/register", jsonParcer, registerUser)
+router.get("/current", auth, getCurrentUser);
+router.post("/register", registerUser);
+router.get("/verify/:verifyToken", verifyNewUser);
+router.post("/verify", resendVerificationToken);
+router.post("/login", logInUser);
+router.post("/logout", auth, logOutUser);
+router.patch("/avatar", auth, avatar.single("avatar"), changeAvatar);
+router.patch("/:id/avatar", auth, avatar.single("avatar"), changeAvatar);
 
-router.get("/verify/:verifyToken", verifyNewUser)
-
-router.post("/verify", jsonParcer, resendVerificationToken)
-
-router.post("/login", jsonParcer, logInUser)
-
-router.post("/logout", auth, jsonParcer, logOutUser)
-
-router.patch("/:id/avatar", auth, avatar.single("avatar"), changeAvatar)
-
-
-module.exports = router
+export default router;

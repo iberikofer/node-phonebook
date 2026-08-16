@@ -1,28 +1,20 @@
-const express = require("express")
-const path = require("path");
-const router = express.Router()
-const jsonParcer = express.json();
-const contactsPath = path.join(__dirname, "../../controllers/contactsController.js");
-const {
+import express from "express";
+import {
 	getContacts,
 	getContactById,
 	removeContact,
 	addContact,
 	updateContact,
-	updateFavoriteField
-} = require(contactsPath)
+	updateFavoriteField,
+} from "../../controllers/contactsController.js";
 
-router.get("/", getContacts)
+const router = express.Router();
 
-router.get("/:id", getContactById)
+router.get("/", getContacts);
+router.get("/:id", getContactById);
+router.post("/", addContact);
+router.delete("/:id", removeContact);
+router.put("/:id", updateContact);
+router.patch("/:id/favorite", updateFavoriteField);
 
-router.post("/", jsonParcer, addContact)
-
-router.delete("/:id", removeContact)
-
-router.put("/:id", jsonParcer, updateContact)
-
-router.patch("/:id/favorite", jsonParcer, updateFavoriteField)
-
-
-module.exports = router
+export default router;
